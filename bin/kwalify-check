@@ -35,12 +35,14 @@ def find_schema_file_from_yaml(yaml_file_name)
         if line =~ /#(.*)/
             if line =~ /#\s*schema:\s*(\S+)/i
                 base_name = $1
+                debug_puts " hit schema: #{$1}"
                 if base_name.start_with?('/') || File.exist?(base_name)
                     retval[:schema] = base_name
                 else
                     retval[:schema] = ENV['HOME'] + '/.kwalify/' + base_name
                 end
             elsif line =~ /#\s*validator:\s*(\S.*)/i
+                debug_puts " hit validator: #{$1}"
                 base_name = $1
                 if base_name.start_with?('/') || File.exist?(base_name)
                     retval[:validator] = base_name
@@ -48,8 +50,10 @@ def find_schema_file_from_yaml(yaml_file_name)
                     retval[:validator] = ENV['HOME'] + '/.kwalify/' + base_name
                 end
             elsif line =~ /#\s*preview:\s*(\S+)/i
+                debug_puts " hit preview: #{$1}"
                 retval[:preview] = true
             elsif line =~ /#\s*snippet:\s*(\S+)/i
+                debug_puts " hit snippet: #{$1}"
                 base_name = $1
                 if base_name.start_with?('/') || File.exist?(base_name)
                     retval[:snippet] = base_name
@@ -217,7 +221,8 @@ end
 
 $debugging = false
 $option = {
-    :do_completion => false
+    :do_completion => false,
+    :do_showsnipmatefile => false
 }
 $params = {
     :comp_pos_line => nil,
@@ -226,6 +231,7 @@ $params = {
 OptionParser.new do |opt|
     opt.on('--complete', 'Show completion candidates')      { |v| $option[:do_completion] = true }
     opt.on('--debug', 'Enable debugging')                   { $debugging = true }
+    opt.on('--snip', 'Extract a snipmate file name')        { $option[:do_showsnipmatefile] = true }
     opt.parse!(ARGV)
 end
 
@@ -234,6 +240,8 @@ if ARGV.empty?
     puts "          Validate the input YAML file"
     puts "       kwalify-check --complete <input YAML file> <context>"
     puts "          Show the completion candidates"
+    puts "       kwalify-check --snip <input YAML file>"
+    puts "          Show the snipmate file"
     exit 2
 end
 input_file_name = ARGV.shift
@@ -241,6 +249,10 @@ current_context = ARGV.shift
 conf = find_schema_file_from_yaml(input_file_name)
 if $option[:do_completion]
     show_completion_candidates(conf, current_context)
+elsif $option[:do_showsnipmatefile]
+    if conf[:snippet]
+        puts conf[:snippet]
+    end
 else
     validate_yaml_file(input_file_name, conf[:schema], conf[:validator])
 end
