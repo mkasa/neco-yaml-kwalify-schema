@@ -95,12 +95,12 @@ endfunction "}}}
 
 function! s:source.gather_candidates(context) "{{{
     let l:yaml_context = s:get_current_context(a:context)
-    echomsg "CONTEXT"
-    echomsg l:yaml_context
+    " echomsg "CONTEXT"
+    " echomsg l:yaml_context
     let l:check_results = s:kwalify_check([l:yaml_context])
     let l:candidates = []
-    echomsg join(l:check_results, " ")
-    echomsg "RESEND"
+    " echomsg join(l:check_results, " ")
+    " echomsg "RESEND"
     for l:p in l:check_results
         let l:ps = split(l:p, '\t')
         if len(l:ps) < 2
