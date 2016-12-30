@@ -7,9 +7,17 @@ let s:source = {
       \ 'hooks' : {},
       \ }
 
-function! s:kwalify_check(cmd) "{{{
+function! s:kwalify_check(context) "{{{
+    " checks if the cache for the given context exists,
+    if exists('b:kwalify_cache')
+        if has_key(b:kwalify_cache, a:context[0])
+            return b:kwalify_cache[a:context[0]]
+        endif
+    else
+        let b:kwalify_cache = {}
+    endif
     lcd `=expand('%:p:h')`
-    let l:cmd = ['kwalify-check', '--complete', expand('%')] + a:cmd
+    let l:cmd = ['kwalify-check', '--complete', expand('%')] + a:context
     if get(g:, 'kwalify_check_debug', 0)
         echomsg "COMMAND: " . join(l:cmd, ' ')
     endif
@@ -21,13 +29,13 @@ function! s:kwalify_check(cmd) "{{{
     lcd -
     let l:lines = split(l:ret, '\r\n\|[\r\n]')
     if empty(l:lines)
-        if get(g:, 'kwalify_check_debug', 0)
-            echohl ErrorMsg
-            echomsg printf('kwalify-check: kwalify-check returned nothing: %s', join(l:cmd, ' '))
-            echohl None
-        endif
+        echohl ErrorMsg
+        echomsg printf('kwalify-check: kwalify-check returned nothing: %s', join(l:cmd, ' '))
+        echohl None
+        let b:kwalify_cache[a:context[0]] = []
         return []
     else
+        let b:kwalify_cache[a:context[0]] = l:lines
         return l:lines
     endif
 endfunction "}}}
@@ -106,6 +114,7 @@ function! s:source.gather_candidates(context) "{{{
         if len(l:ps) < 2
           continue
         endif
+        continue
         let l:cm = l:ps[0]
         if l:cm ==# 'SNIPPET'
             if exists('g:loaded_neosnippet')

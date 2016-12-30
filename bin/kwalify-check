@@ -179,6 +179,9 @@ def show_completion_candidates(conf, context)
     if conf[:snippet]
         puts "SNIPPET\t#{conf[:snippet]}"
     end
+    if conf[:schema].nil?
+        return
+    end
     # Parse by yaml module
     begin
         f = File.open(conf[:schema], "rb")
