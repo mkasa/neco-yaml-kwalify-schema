@@ -114,7 +114,6 @@ function! s:source.gather_candidates(context) "{{{
         if len(l:ps) < 2
           continue
         endif
-        continue
         let l:cm = l:ps[0]
         if l:cm ==# 'SNIPPET'
             if exists('g:loaded_neosnippet')
